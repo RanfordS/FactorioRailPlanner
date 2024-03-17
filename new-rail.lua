@@ -5,14 +5,15 @@ local V = Vec.new
 local Bezier = require "bezier"
 
 ---@class RailSegment
+---@field pos_c Vec Center (for positioning).
 ---@field pos_a Vec
 ---@field pos_b Vec
 ---@field ang_a integer
 ---@field ang_b integer
 ---@field parity_a GridParity
 ---@field parity_b GridParity
----@field signal_a (Vec|false)[] These are the signals on the left as you go from A to B.
----@field signal_b (Vec|false)[] These are the signals opposite those in signal_a.
+---@field signal_a2b (Vec|false)[] These are the signals on the right as you travel from a to b.
+---@field signal_b2a (Vec|false)[] These are the signals on the right as you travel from b to a, note that they are in reverse order as they pair with the elements of `signal_a2b`.
 ---@field path number[]
 local RailSegment = {}
 RailSegment.__index = RailSegment
@@ -37,8 +38,28 @@ local map_mirror_y =
     s4 = "s4", s5 = "s3", s6 = "s2", s7 = "s1",
 }
 
-local map_rotate
+local map_rotate_clock =
+{
+    c0 = "cC", c1 = "cD", c2 = "cE", c3 = "cF",
+    c4 = "c0", c5 = "c1", c6 = "c2", c7 = "c3",
+    c8 = "c4", c9 = "c5", cA = "c6", cB = "c7",
+    cC = "c8", cD = "c9", cE = "cA", cF = "cB",
+    s0 = "s4", s1 = "s5", s2 = "s6", s3 = "s7",
+    s4 = "s0", s5 = "s1", s6 = "s2", s7 = "s3",
+}
 
+local map_rotate_anticlock =
+{
+    c0 = "c4", c1 = "c5", c2 = "c6", c3 = "c7",
+    c4 = "c8", c5 = "c9", c6 = "cA", c7 = "cB",
+    c8 = "cC", c9 = "cD", cA = "cE", cB = "cF",
+    cC = "c0", cD = "c1", cE = "c2", cF = "c3",
+    s0 = "s4", s1 = "s5", s2 = "s6", s3 = "s7",
+    s4 = "s0", s5 = "s1", s6 = "s2", s7 = "s3",
+}
+
+---@param v Vec
+---@return GridParity
 local function calc_parity (v)
     local x = v.x % 2
     local y = v.y % 2
@@ -61,14 +82,15 @@ local function rot_parity (p)
 end
 
 ---@param pos_a Vec
----@param ay integer
 ---@param aa integer
 ---@param ap GridParity
+---@param asig (Vec|false)[]
 ---@param pos_b Vec
 ---@param ba integer
 ---@param bp GridParity
+---@param bsig (Vec|false)[]
 ---@return RailSegment
-function RailSegment.new (pos_a, aa, ap, pos_b, ba, bp, asig, bsig)
+function RailSegment.new (pos_a, aa, ap, asig, pos_b, ba, bp, bsig)
     return setmetatable (
     {   pos_a = pos_a,
         pos_b = pos_b,
@@ -76,19 +98,22 @@ function RailSegment.new (pos_a, aa, ap, pos_b, ba, bp, asig, bsig)
         ang_b = ba,
         parity_a = ap,
         parity_b = bp,
-        signal_a = asig,
-        signal_b = bsig,
+        signal_a2b = asig,
+        signal_b2a = bsig,
+        pos_c = (pos_a + pos_b)/2,
     },  RailSegment):gen_path ()
 end
 local new = RailSegment.new
 
 --     5 4 3
---   6   |   2  
--- 7     |     1
--- 0 --- x --- 0
--- 1     |     7
---   2   |   6
---     3 4 5
+--   6   |   2
+-- 7     |     1   -
+-- 8 --- x --- 0   y
+-- 9     |     F   +
+--   A   |   E
+--     B C D
+--
+--     - x +
 
 local directions = {
     [0] = V( 2, 0),
@@ -101,13 +126,7 @@ local directions = {
     [7] = V( 2, 1),
 }
 
-local function mirror_dir (i)
-    return (8 - i)%8
-end
 
-local function rot_dir (i)
-    return (i + 4)%8
-end
 
 ---@param arr (Vec|false)[]
 ---@return (Vec|false)[]
@@ -140,72 +159,106 @@ function RailSegment:gen_path ()
     return self
 end
 
-function RailSegment:rot ()
-    return new (
-        self.pos_a:rotate_90 (), rot_dir (self.ang_a), rot_parity (self.parity_a),
-        self.pos_b:rotate_90 (), rot_dir (self.ang_b), rot_parity (self.parity_b),
-        Utils.array_func (self.signal_a, Vec.rotate_90),
-        Utils.array_func (self.signal_b, Vec.rotate_90))
-end
 
---[[ not needed
-function RailSegment:mirror ()
-    return new (
-        self.pos_a:mirror_x (), mirror_dir (self.ang_a), self.parity_a,
-        self.pos_b:mirror_x (), mirror_dir (self.ang_b), self.parity_b,
-        Utils.array_func (self.signal_b, Vec.mirror_x),
-        Utils.array_func (self.signal_a, Vec.mirror_x))
-end
---]]
 
-local a3 = RailSegment.new (
-    V(0,0), 0, GridParity.ox_ey,
-    V(5,1), 7, GridParity.ex_oy,
-    {},
-    {})
+-- Curves
 
-local a2 = RailSegment.new (
-    V(0,0), 7, GridParity.ox_ey,
-    V(4,3), 6, GridParity.ex_oy)
+RailSegment.c0 = RailSegment.new (
+    V(5,2),  0, GridParity.ox_ey, {V(4.5,0.5), V(0.5,1.5)},
+    V(0,3),  9, GridParity.ex_oy, {V(4.5,3.5), V(1.5,3.5)})
 
-local a1 = RailSegment.new (
-    V(0,0), 6, GridParity.ox_ey,
-    V(3,4), 5, GridParity.ex_oy)
+RailSegment.c1 = RailSegment.new (
+    V(5,1),  1, GridParity.ex_oy, {V(3.5,0.5), V(2.5,1.5), V(0.5,2.5)},
+    V(1,4), 10, GridParity.ox_oy, {V(4.5,2.5),    false,   V(2.5,4.5)})
 
-local a0 = RailSegment.new (
-    V(0,0), 5, GridParity.ox_ey,
-    V(1,5), 4, GridParity.ex_oy)
+RailSegment.c2 = RailSegment.new (
+    V(4,1),  2, GridParity.ox_oy, {V(2.5,0.5), V(1.5,2.5), V(0.5,3.5)},
+    V(1,5), 11, GridParity.ex_oy, {V(4.5,2.5),    false,   V(2.5,4.5)})
 
-local s0 = RailSegment.new (
-    V(0,0), 0, GridParity.ex_oy,
-    V(2,0), 0, GridParity.ex_oy)
+RailSegment.c3 = RailSegment.new (
+    V(3,0),  3, GridParity.ex_oy, {V(1.5,0.5), V(0.5,4.5)},
+    V(2,5), 12, GridParity.ox_ey, {V(3.5,1.5), V(3.5,4.5)})
 
-local s1 = RailSegment.new (
-    V(0,2), 1, GridParity.ox_ey,
-    V(4,0), 1, GridParity.ox_ey)
+RailSegment.c4 = RailSegment.new (
+    V(2,0),  4, GridParity.ox_ey, {V(0.5,0.5), V(1.5,4.5)},
+    V(3,5), 13, GridParity.ex_oy, {V(3.5,0.5), V(3.5,3.5)})
 
-local s2 = RailSegment.new (
-    V(0,2), 2, GridParity.ox_oy,
-    V(2,0), 2, GridParity.ox_oy)
+RailSegment.c5 = RailSegment.new (
+    V(1,0),  5, GridParity.ex_oy, {V(0.5,1.5), V(1.5,2.5), V(2.5,4.5)},
+    V(4,4), 14, GridParity.ox_oy, {V(2.5,0.5),    false,   V(4.5,2.5)})
 
-local s3 = RailSegment.new (
-    V(0,4), 3, GridParity.ex_oy,
-    V(2,0), 3, GridParity.ex_oy)
+RailSegment.c6 = RailSegment.new (
+    V(1,1),  6, GridParity.ox_oy, {V(0.5,2.5), V(2.5,3.5), V(3.5,4.5)},
+    V(5,4), 15, GridParity.ox_ey, {V(2.5,0.5),    false,   V(4.5,2.5)})
 
-RailSegment.curve = {}
-for i, s in ipairs {a0, a1, a2, a3} do
-    RailSegment.curve[i-1] = s
-    local seg = s
-    for j = 1, 3 do
-        seg = seg:rot ()
-        RailSegment.curve[i + 4*j - 1] = seg
-    end
-end
+RailSegment.c7 = RailSegment.new (
+    V(0,1),  7, GridParity.ox_ey, {V(0.5,2.5), V(4.5,3.5)},
+    V(5,2),  0, GridParity.ex_oy, {V(1.5,0.5), V(4.5,0.5)})
 
-RailSegment.straight = {}
-for i, s in ipairs {s0, s1, s2, s3} do
-    RailSegment.curve[i-1] = s
-    RailSegment.curve[i+3] = s:rot ()
-end
+RailSegment.c8 = RailSegment.new (
+    V(0,2),  8, GridParity.ex_oy, {V(0.5,3.5), V(3.5,2.5)},
+    V(5,1),  1, GridParity.ox_ey, {V(1.5,0.5), V(4.5,0.5)})
+
+RailSegment.c9 = RailSegment.new (
+    V(0,4),  9, GridParity.ox_ey, {V(1.5,4.5), V(2.5,3.5), V(4.5,2.5)},
+    V(4,1),  2, GridParity.ox_oy, {V(0.5,2.5),    false,   V(2.5,0.5)})
+
+RailSegment.cA = RailSegment.new (
+    V(1,4), 10, GridParity.ox_oy, {V(2.5,4.5), V(3.5,2.5), V(4.5,1.5)},
+    V(4,0),  3, GridParity.ex_oy, {V(0.5,2.5),    false,   V(2.5,0.5)})
+
+RailSegment.cB = RailSegment.new (
+    V(1,5), 11, GridParity.ex_oy, {V(2.5,4.5), V(3.5,0.5)},
+    V(2,0),  4, GridParity.ox_ey, {V(0.5,3.5), V(0.5,0.5)})
+
+RailSegment.cC = RailSegment.new (
+    V(2,5), 12, GridParity.ox_ey, {V(3.5,4.5), V(2.5,0.5)},
+    V(1,0),  5, GridParity.ex_oy, {V(0.5,4.5), V(0.5,1.5)})
+
+RailSegment.cD = RailSegment.new (
+    V(4,5), 13, GridParity.ex_oy, {V(3.5,4.5), V(4.5,3.5), V(2.5,0.5)},
+    V(1,1),  6, GridParity.ox_oy, {V(0.5,4.5),    false,   V(0.5,1.5)})
+
+RailSegment.cE = RailSegment.new (
+    V(4,4), 14, GridParity.ox_oy, {V(4.5,2.5), V(2.5,1.5), V(1.5,0.5)},
+    V(0,1),  7, GridParity.ox_ey, {V(2.5,4.5),    false,   V(0.5,2.5)})
+
+RailSegment.cF = RailSegment.new (
+    V(5,3), 15, GridParity.ex_oy, {V(4.5,1.5), V(0.5,0.5)},
+    V(0,2),  8, GridParity.ox_ey, {V(3.5,3.5), V(0.5,3.5)})
+
+-- Straights
+
+RailSegment.s0 = RailSegment.new (
+    V(0,2),  0, GridParity.ex_oy, {V(1.5,0.5), V(0.5,0.5)},
+    V(2,2),  8, GridParity.ex_oy, {V(1.5,3.5), V(0.5,3.5)})
+
+RailSegment.s1 = RailSegment.new (
+    V(4,1),  1, GridParity.ox_ey, {V(2.5,0.5), V(0.5,1.5)},
+    V(0,3),  9, GridParity.ox_ey, {V(3.5,2.5), V(1.5,3.5)})
+
+RailSegment.s2 = RailSegment.new (
+    V(3,1),  2, GridParity.ox_oy, {V(1.5,0.5), V(0.5,1.5)},
+    V(1,3), 10, GridParity.ox_oy, {V(3.5,2.5), V(2.5,3.5)})
+
+RailSegment.s3 = RailSegment.new (
+    V(3,0),  3, GridParity.ex_oy, {V(1.5,0.5), V(0.5,2.5)},
+    V(1,4), 11, GridParity.ex_oy, {V(3.5,1.5), V(2.5,3.5)})
+
+RailSegment.s4 = RailSegment.new (
+    V(2,0),  4, GridParity.ox_ey, {V(0.5,0.5), V(0.5,1.5)},
+    V(2,2), 12, GridParity.ox_ey, {V(3.5,0.5), V(3.5,1.5)})
+
+RailSegment.s5 = RailSegment.new (
+    V(1,0),  5, GridParity.ex_oy, {V(0.5,1.5), V(1.5,3.5)},
+    V(3,4), 13, GridParity.ex_oy, {V(2.5,0.5), V(3.5,2.5)})
+
+RailSegment.s6 = RailSegment.new (
+    V(1,1),  6, GridParity.ox_oy, {V(0.5,2.5), V(1.5,3.5)},
+    V(3,3), 14, GridParity.ox_oy, {V(2.5,0.5), V(3.5,1.5)})
+
+RailSegment.s7 = RailSegment.new (
+    V(0,1),  7, GridParity.ox_ey, {V(0.5,2.5), V(2.5,3.5)},
+    V(4,3), 15, GridParity.ox_ey, {V(1.5,0.5), V(3.5,1.5)})
 
 return RailSegment
