@@ -130,101 +130,101 @@ end
 -- Curves
 
 RailSegment.c0 = RailSegment.new (
-    V(5,2),  0, Parity.ox_ey, {V(4.5,0.5), V(0.5,1.5)},
-    V(0,3),  9, Parity.ex_oy, {V(4.5,3.5), V(1.5,3.5)})
+    V(5,2),  0, Parity.ex, {V(4.5,0.5), V(0.5,1.5)},
+    V(0,3),  9, Parity.ey, {V(4.5,3.5), V(1.5,3.5)})
 
 RailSegment.c1 = RailSegment.new (
-    V(5,1),  1, Parity.ex_oy, {V(3.5,0.5), V(2.5,1.5), V(0.5,2.5)},
-    V(1,4), 10, Parity.ox_oy, {V(4.5,2.5),    false,   V(2.5,4.5)})
+    V(5,1),  1, Parity.ey, {V(3.5,0.5), V(2.5,1.5), V(0.5,2.5)},
+    V(1,4), 10, Parity.ob, {V(4.5,2.5),    false,   V(2.5,4.5)})
 
 RailSegment.c2 = RailSegment.new (
-    V(4,1),  2, Parity.ox_oy, {V(2.5,0.5), V(1.5,2.5), V(0.5,3.5)},
-    V(1,5), 11, Parity.ex_oy, {V(4.5,2.5),    false,   V(2.5,4.5)})
+    V(4,1),  2, Parity.ob, {V(2.5,0.5), V(1.5,2.5), V(0.5,3.5)},
+    V(1,5), 11, Parity.ex, {V(4.5,2.5),    false,   V(2.5,4.5)})
 
 RailSegment.c3 = RailSegment.new (
-    V(3,0),  3, Parity.ex_oy, {V(1.5,0.5), V(0.5,4.5)},
-    V(2,5), 12, Parity.ox_ey, {V(3.5,1.5), V(3.5,4.5)})
+    V(3,0),  3, Parity.ex, {V(1.5,0.5), V(0.5,4.5)},
+    V(2,5), 12, Parity.ey, {V(3.5,1.5), V(3.5,4.5)})
 
 RailSegment.c4 = RailSegment.new (
-    V(2,0),  4, Parity.ox_ey, {V(0.5,0.5), V(1.5,4.5)},
-    V(3,5), 13, Parity.ex_oy, {V(3.5,0.5), V(3.5,3.5)})
+    V(2,0),  4, Parity.ey, {V(0.5,0.5), V(1.5,4.5)},
+    V(3,5), 13, Parity.ex, {V(3.5,0.5), V(3.5,3.5)})
 
 RailSegment.c5 = RailSegment.new (
-    V(1,0),  5, Parity.ex_oy, {V(0.5,1.5), V(1.5,2.5), V(2.5,4.5)},
-    V(4,4), 14, Parity.ox_oy, {V(2.5,0.5),    false,   V(4.5,2.5)})
+    V(1,0),  5, Parity.ex, {V(0.5,1.5), V(1.5,2.5), V(2.5,4.5)},
+    V(4,4), 14, Parity.ob, {V(2.5,0.5),    false,   V(4.5,2.5)})
 
 RailSegment.c6 = RailSegment.new (
-    V(1,1),  6, Parity.ox_oy, {V(0.5,2.5), V(2.5,3.5), V(3.5,4.5)},
-    V(5,4), 15, Parity.ox_ey, {V(2.5,0.5),    false,   V(4.5,2.5)})
+    V(1,1),  6, Parity.ob, {V(0.5,2.5), V(2.5,3.5), V(3.5,4.5)},
+    V(5,4), 15, Parity.ey, {V(2.5,0.5),    false,   V(4.5,2.5)})
 
 RailSegment.c7 = RailSegment.new (
-    V(0,1),  7, Parity.ox_ey, {V(0.5,2.5), V(4.5,3.5)},
-    V(5,2),  0, Parity.ex_oy, {V(1.5,0.5), V(4.5,0.5)})
+    V(0,1),  7, Parity.ey, {V(0.5,2.5), V(4.5,3.5)},
+    V(5,2),  0, Parity.ex, {V(1.5,0.5), V(4.5,0.5)})
 
 RailSegment.c8 = RailSegment.new (
-    V(0,2),  8, Parity.ex_oy, {V(0.5,3.5), V(3.5,2.5)},
-    V(5,1),  1, Parity.ox_ey, {V(1.5,0.5), V(4.5,0.5)})
+    V(0,2),  8, Parity.ex, {V(0.5,3.5), V(3.5,2.5)},
+    V(5,1),  1, Parity.ey, {V(1.5,0.5), V(4.5,0.5)})
 
 RailSegment.c9 = RailSegment.new (
-    V(0,4),  9, Parity.ox_ey, {V(1.5,4.5), V(2.5,3.5), V(4.5,2.5)},
-    V(4,1),  2, Parity.ox_oy, {V(0.5,2.5),    false,   V(2.5,0.5)})
+    V(0,4),  9, Parity.ey, {V(1.5,4.5), V(2.5,3.5), V(4.5,2.5)},
+    V(4,1),  2, Parity.ob, {V(0.5,2.5),    false,   V(2.5,0.5)})
 
 RailSegment.cA = RailSegment.new (
-    V(1,4), 10, Parity.ox_oy, {V(2.5,4.5), V(3.5,2.5), V(4.5,1.5)},
-    V(4,0),  3, Parity.ex_oy, {V(0.5,2.5),    false,   V(2.5,0.5)})
+    V(1,4), 10, Parity.ob, {V(2.5,4.5), V(3.5,2.5), V(4.5,1.5)},
+    V(4,0),  3, Parity.ex, {V(0.5,2.5),    false,   V(2.5,0.5)})
 
 RailSegment.cB = RailSegment.new (
-    V(1,5), 11, Parity.ex_oy, {V(2.5,4.5), V(3.5,0.5)},
-    V(2,0),  4, Parity.ox_ey, {V(0.5,3.5), V(0.5,0.5)})
+    V(1,5), 11, Parity.ex, {V(2.5,4.5), V(3.5,0.5)},
+    V(2,0),  4, Parity.ey, {V(0.5,3.5), V(0.5,0.5)})
 
 RailSegment.cC = RailSegment.new (
-    V(2,5), 12, Parity.ox_ey, {V(3.5,4.5), V(2.5,0.5)},
-    V(1,0),  5, Parity.ex_oy, {V(0.5,4.5), V(0.5,1.5)})
+    V(2,5), 12, Parity.ey, {V(3.5,4.5), V(2.5,0.5)},
+    V(1,0),  5, Parity.ex, {V(0.5,4.5), V(0.5,1.5)})
 
 RailSegment.cD = RailSegment.new (
-    V(4,5), 13, Parity.ex_oy, {V(3.5,4.5), V(4.5,3.5), V(2.5,0.5)},
-    V(1,1),  6, Parity.ox_oy, {V(0.5,4.5),    false,   V(0.5,1.5)})
+    V(4,5), 13, Parity.ex, {V(3.5,4.5), V(4.5,3.5), V(2.5,0.5)},
+    V(1,1),  6, Parity.ob, {V(0.5,4.5),    false,   V(0.5,1.5)})
 
 RailSegment.cE = RailSegment.new (
-    V(4,4), 14, Parity.ox_oy, {V(4.5,2.5), V(2.5,1.5), V(1.5,0.5)},
-    V(0,1),  7, Parity.ox_ey, {V(2.5,4.5),    false,   V(0.5,2.5)})
+    V(4,4), 14, Parity.ob, {V(4.5,2.5), V(2.5,1.5), V(1.5,0.5)},
+    V(0,1),  7, Parity.ey, {V(2.5,4.5),    false,   V(0.5,2.5)})
 
 RailSegment.cF = RailSegment.new (
-    V(5,3), 15, Parity.ex_oy, {V(4.5,1.5), V(0.5,0.5)},
-    V(0,2),  8, Parity.ox_ey, {V(3.5,3.5), V(0.5,3.5)})
+    V(5,3), 15, Parity.ey, {V(4.5,1.5), V(0.5,0.5)},
+    V(0,2),  8, Parity.ex, {V(3.5,3.5), V(0.5,3.5)})
 
 -- Straights
 
 RailSegment.s0 = RailSegment.new (
-    V(0,2),  0, Parity.ex_oy, {V(1.5,0.5), V(0.5,0.5)},
-    V(2,2),  8, Parity.ex_oy, {V(1.5,3.5), V(0.5,3.5)})
+    V(0,2),  0, Parity.ex, {V(1.5,0.5), V(0.5,0.5)},
+    V(2,2),  8, Parity.ex, {V(1.5,3.5), V(0.5,3.5)})
 
 RailSegment.s1 = RailSegment.new (
-    V(4,1),  1, Parity.ox_ey, {V(2.5,0.5), V(0.5,1.5)},
-    V(0,3),  9, Parity.ox_ey, {V(3.5,2.5), V(1.5,3.5)})
+    V(4,1),  1, Parity.ey, {V(2.5,0.5), V(0.5,1.5)},
+    V(0,3),  9, Parity.ey, {V(3.5,2.5), V(1.5,3.5)})
 
 RailSegment.s2 = RailSegment.new (
-    V(3,1),  2, Parity.ox_oy, {V(1.5,0.5), V(0.5,1.5)},
-    V(1,3), 10, Parity.ox_oy, {V(3.5,2.5), V(2.5,3.5)})
+    V(3,1),  2, Parity.ob, {V(1.5,0.5), V(0.5,1.5)},
+    V(1,3), 10, Parity.ob, {V(3.5,2.5), V(2.5,3.5)})
 
 RailSegment.s3 = RailSegment.new (
-    V(3,0),  3, Parity.ex_oy, {V(1.5,0.5), V(0.5,2.5)},
-    V(1,4), 11, Parity.ex_oy, {V(3.5,1.5), V(2.5,3.5)})
+    V(3,0),  3, Parity.ex, {V(1.5,0.5), V(0.5,2.5)},
+    V(1,4), 11, Parity.ex, {V(3.5,1.5), V(2.5,3.5)})
 
 RailSegment.s4 = RailSegment.new (
-    V(2,0),  4, Parity.ox_ey, {V(0.5,0.5), V(0.5,1.5)},
-    V(2,2), 12, Parity.ox_ey, {V(3.5,0.5), V(3.5,1.5)})
+    V(2,0),  4, Parity.ey, {V(0.5,0.5), V(0.5,1.5)},
+    V(2,2), 12, Parity.ey, {V(3.5,0.5), V(3.5,1.5)})
 
 RailSegment.s5 = RailSegment.new (
-    V(1,0),  5, Parity.ex_oy, {V(0.5,1.5), V(1.5,3.5)},
-    V(3,4), 13, Parity.ex_oy, {V(2.5,0.5), V(3.5,2.5)})
+    V(1,0),  5, Parity.ex, {V(0.5,1.5), V(1.5,3.5)},
+    V(3,4), 13, Parity.ex, {V(2.5,0.5), V(3.5,2.5)})
 
 RailSegment.s6 = RailSegment.new (
-    V(1,1),  6, Parity.ox_oy, {V(0.5,2.5), V(1.5,3.5)},
-    V(3,3), 14, Parity.ox_oy, {V(2.5,0.5), V(3.5,1.5)})
+    V(1,1),  6, Parity.ob, {V(0.5,2.5), V(1.5,3.5)},
+    V(3,3), 14, Parity.ob, {V(2.5,0.5), V(3.5,1.5)})
 
 RailSegment.s7 = RailSegment.new (
-    V(0,1),  7, Parity.ox_ey, {V(0.5,2.5), V(2.5,3.5)},
-    V(4,3), 15, Parity.ox_ey, {V(1.5,0.5), V(3.5,1.5)})
+    V(0,1),  7, Parity.ey, {V(0.5,2.5), V(2.5,3.5)},
+    V(4,3), 15, Parity.ey, {V(1.5,0.5), V(3.5,1.5)})
 
 return RailSegment

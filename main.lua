@@ -1,7 +1,7 @@
 ---@source love
 local Vec = require "vec"
-local Rail = require "rail"
-
+local Rail = require "new-rail"
+local Parity = require "parity"
 
 -- Factorio's coordinates are as follows, everything developed to match
 -- 	#--> x
@@ -72,6 +72,7 @@ local function checkers (win)
 
 	local dbg_off = 0
 
+	love.graphics.setColor (bg_light)
 	for r = tl.y+dbg_off, br.y-1-dbg_off do
 		for c = tl.x+dbg_off, br.x-1-dbg_off do
 			if (r + c) % 2 == 0 then
@@ -79,11 +80,24 @@ local function checkers (win)
 			end
 		end
 	end
+    love.graphics.setColor (1.0, 0.8, 0.5)
+	for r = tl.y+dbg_off, br.y-1-dbg_off do
+		for c = tl.x+dbg_off, br.x-1-dbg_off do
+            if r % 2 == 0 and c % 2 == 0 then
+                love.graphics.circle ("fill", c, r, 0.1, 4)
+            end
+		end
+	end
 end
 
+local seq = {
+    "c0", "c1", "c2", "c3", "c4", "c5", "c6", "c7",
+    "c8", "c9", "cA", "cB", "cC", "cD", "cE", "cF",
+    "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7",
+}
 local idx = 1
 function love.mousepressed (x, y, button, istouch, presses)
-    idx = (idx % #Rail.basic) + 1
+    idx = (idx % #seq) + 1
 end
 
 ---@param mw Vec
@@ -123,7 +137,6 @@ function love.draw ()
 	love.graphics.scale (cam.scale)
 	love.graphics.translate (-cam.pos.x, -cam.pos.y)
 
-	love.graphics.setColor (bg_light)
 	checkers (win)
 	--[[
 	love.graphics.rectangle ("fill",-1,-1, 1, 1)
@@ -158,13 +171,16 @@ function love.draw ()
 	love.graphics.circle ("fill", mg.x, mg.y, 0.2)
 	love.graphics.line (mw.x, mw.y, mg.x, mg.y)
 
+    love.graphics.push ()
+    ---@type RailSegment
+    local obj = Rail[seq[idx]]
+    local pos_a = mw + obj.pos_a - obj.pos_c
+    pos_a = Parity.closest (pos_a, obj.parity_a)
+    local pos = pos_a - obj.pos_a
+    love.graphics.translate (pos.x,pos.y)
 	love.graphics.setColor (1,1,1)
-    --[[
-    for _, s in ipairs (Rail.basic) do
-        s:draw ()
-    end
-    --]]
-    love.graphics.line (Rail.basic[idx].path)
+    love.graphics.line (obj.path)
+    love.graphics.pop ()
     Debug ("idx = %i", idx)
 
 	love.graphics.origin ()
