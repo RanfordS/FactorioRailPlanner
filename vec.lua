@@ -143,4 +143,16 @@ function Vec.unwrap (list)
     return array
 end
 
+---@param a Vec
+---@param b Vec
+---@return Vec min
+---@return Vec max
+function Vec.bounds (a, b)
+    local x_min = math.min (a.x, b.x)
+    local x_max = math.max (a.x, b.x)
+    local y_min = math.min (a.y, b.y)
+    local y_max = math.max (a.y, b.y)
+    return Vec.new (x_min, y_min), Vec.new (x_max, y_max)
+end
+
 return Vec

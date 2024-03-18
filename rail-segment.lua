@@ -15,7 +15,10 @@ local Parity = require "parity"
 ---@field parity_b Parity
 ---@field signal_a2b (Vec|false)[] These are the signals on the right as you travel from a to b.
 ---@field signal_b2a (Vec|false)[] These are the signals on the right as you travel from b to a, note that they are in reverse order as they pair with the elements of `signal_a2b`.
+---@field geometry Vec[]
 ---@field path number[]
+---@field top_left Vec
+---@field bot_right Vec
 local RailSegment = {}
 RailSegment.__index = RailSegment
 
@@ -143,13 +146,62 @@ function RailSegment:gen_path ()
     end
 
     local points = {}
+    self.top_left = Vec.new (math.huge, math.huge)
+    self.bot_right = 0-self.top_left
     for i, p in ipairs (positions) do
         local n = tangents[i]:rotate_90 ()*radius
-        table.insert (points,    p + n)
-        table.insert (points, 1, p - n)
+        local lhs = p - n
+        local rhs = p + n
+        self.top_left.x  = math.min (self.top_left.x,  lhs.x, rhs.x)
+        self.top_left.y  = math.min (self.top_left.y,  lhs.y, rhs.y)
+        self.bot_right.x = math.max (self.bot_right.x, lhs.x, rhs.x)
+        self.bot_right.y = math.max (self.bot_right.y, lhs.y, rhs.y)
+        table.insert (points,    lhs)
+        table.insert (points, 1, rhs)
     end
+    self.geometry = points
     self.path = Vec.unwrap (points)
     return self
+end
+
+function RailSegment:contains (p)
+    -- bounding box shortcut
+    if p.x < self.top_left.x
+    or p.y < self.top_left.y
+    or p.x > self.bot_right.x
+    or p.y > self.bot_right.y
+    then return false end
+    -- hacky sidedness algorithm begins,
+    -- find the closes edge point to `p`
+    local b_dist = math.huge
+    local b_i = 1
+    for i, v in ipairs (self.geometry) do
+        local dist = (v - p):mag ()
+        if dist < b_dist then
+            b_dist = dist
+            b_i = i
+        end
+    end
+    -- get the neighbouring points
+    local a_i = ((b_i - 2) % #self.geometry) + 1
+    local c_i = (b_i % #self.geometry) + 1
+    -- some definitions
+    local a = self.geometry[a_i]
+    local b = self.geometry[b_i]
+    local c = self.geometry[c_i]
+    local ba = a - b
+    local bc = c - b
+    local bp = p - b
+    -- determine if it's a concave or convex edge
+    local ang = ba:cross(bc)
+    -- edge sidedness values
+    local alpha = bp:cross(ba)
+    local kappa  = bc:cross(bp)
+    if ang < 0 then
+        return alpha > 0 and kappa > 0
+    else
+        return alpha > 0 or  kappa > 0
+    end
 end
 
 
