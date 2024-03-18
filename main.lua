@@ -1,6 +1,6 @@
 ---@source love
 local Vec = require "vec"
-local Rail = require "rail"
+local Rail = require "rail-segment"
 local Parity = require "parity"
 
 -- Factorio's coordinates are as follows, everything developed to match
