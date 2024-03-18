@@ -132,6 +132,8 @@ function Vec.cramer (a, b, c)
     return Vec.new (l/d, r/d)
 end
 
+---@param list Vec[]
+---@return number[]
 function Vec.unwrap (list)
     local array = {}
     for _, v in ipairs (list) do
