@@ -98,6 +98,12 @@ end
 
 ---@param val Vec
 ---@return Vec
+function Vec.norm (val)
+    return val/val:mag()
+end
+
+---@param val Vec
+---@return Vec
 function Vec.rotate_90 (val)
 	return Vec.new (-val.y, val.x)
 end

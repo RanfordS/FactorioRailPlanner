@@ -1,3 +1,5 @@
+---@meta
+
 love = {}
 love.graphics = {}
 

@@ -1,6 +1,6 @@
 ---@source love
 local Vec = require "vec"
-local Rail = require "new-rail"
+local Rail = require "rail"
 local Parity = require "parity"
 
 -- Factorio's coordinates are as follows, everything developed to match
@@ -91,41 +91,13 @@ local function checkers (win)
 end
 
 local seq = {
+    "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7",
     "c0", "c1", "c2", "c3", "c4", "c5", "c6", "c7",
     "c8", "c9", "cA", "cB", "cC", "cD", "cE", "cF",
-    "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7",
 }
 local idx = 1
 function love.mousepressed (x, y, button, istouch, presses)
     idx = (idx % #seq) + 1
-end
-
----@param mw Vec
----@return Vec oo Odd-Odd
----@return Vec eo Even-Odd
----@return Vec oe Odd-Even
----@return Vec ee Even-Even
-local function fetch_cursors (mw)
-    local mg = mw:round () -- centre point
-    local best = {
-        ["00"] = {d = math.huge},
-        ["01"] = {d = math.huge},
-        ["10"] = {d = math.huge},
-        ["11"] = {d = math.huge},
-    }
-    local function f(x,y)
-        local p = mg + Vec.new (x,y)
-        local dist = (p - mw):mag()
-        local t = ("%i%i"):format(p.x%2, p.y%2)
-        if dist < best[t].d then
-            best[t].d = dist
-            best[t].v = p
-        end
-    end
-    f(-1,-1); f( 0,-1); f( 1,-1)
-    f(-1, 0); f( 0, 0); f( 1, 0)
-    f(-1, 1); f( 0, 1); f( 1, 1)
-    return best["11"].v, best["01"].v, best["10"].v, best["00"].v
 end
 
 function love.draw ()
@@ -138,10 +110,6 @@ function love.draw ()
 	love.graphics.translate (-cam.pos.x, -cam.pos.y)
 
 	checkers (win)
-	--[[
-	love.graphics.rectangle ("fill",-1,-1, 1, 1)
-	love.graphics.rectangle ("fill", 0, 0, 1, 1)
-	--]]
 
 	Debug ("cam pos: %.2f, %.2f", cam.pos.x, cam.pos.y)
 	Debug ("zoom: %.2fpx/tile, %i", cam.scale, cam.zoom)
@@ -153,24 +121,6 @@ function love.draw ()
 	love.graphics.setLineWidth (0.2)
 	Debug ("mouse: %.2f, %.2f, [%i,%i]", mw.x, mw.y, mg.x, mg.y)
 
-    local oo, eo, oe, ee = fetch_cursors (mw)
-
-    love.graphics.setColor (0.5, 0.2, 0.1, 1)
-	love.graphics.circle ("fill", oo.x, oo.y, 0.2)
-	love.graphics.line (mw.x, mw.y, oo.x, oo.y)
-
-    love.graphics.setColor (0.1, 0.5, 0.2, 1)
-	love.graphics.circle ("fill", eo.x, eo.y, 0.2)
-	love.graphics.line (mw.x, mw.y, eo.x, eo.y)
-
-    love.graphics.setColor (0.2, 0.1, 0.5, 1)
-	love.graphics.circle ("fill", oe.x, oe.y, 0.2)
-	love.graphics.line (mw.x, mw.y, oe.x, oe.y)
-
-	love.graphics.setColor (fg_cursor)
-	love.graphics.circle ("fill", mg.x, mg.y, 0.2)
-	love.graphics.line (mw.x, mw.y, mg.x, mg.y)
-
     love.graphics.push ()
     ---@type RailSegment
     local obj = Rail[seq[idx]]
@@ -179,7 +129,7 @@ function love.draw ()
     local pos = pos_a - obj.pos_a
     love.graphics.translate (pos.x,pos.y)
 	love.graphics.setColor (1,1,1)
-    love.graphics.line (obj.path)
+    love.graphics.polygon ("line", obj.path)
     love.graphics.pop ()
     Debug ("idx = %i", idx)
 
