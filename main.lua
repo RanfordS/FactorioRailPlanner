@@ -1,6 +1,7 @@
 ---@source love
 local Vec = require "vec"
 local Rail = require "rail-segment"
+local RailInstance = require "rail-instance"
 local Parity = require "parity"
 
 -- Factorio's coordinates are as follows, everything developed to match
@@ -90,6 +91,8 @@ local function checkers (win)
 	end
 end
 
+local obj = RailInstance.new ("c0", Vec.new (10,0))
+
 local seq = {
     "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7",
     "c0", "c1", "c2", "c3", "c4", "c5", "c6", "c7",
@@ -98,6 +101,17 @@ local seq = {
 local idx = 1
 function love.mousepressed (x, y, button, istouch, presses)
     idx = (idx % #seq) + 1
+    obj.segment = seq[idx]
+end
+
+---@param pos Vec The point you want to transform (usually the mouse world position).
+---@param ref Vec A reference marker (usually the relative centre of the object).
+---@param anchor Vec An anchor point.
+---@param anchor_parity Parity The parity of the anchor point.
+local function snapping (pos, ref, anchor, anchor_parity)
+    local relative = pos + anchor - ref
+    local snapped = Parity.closest (relative, anchor_parity)
+    return snapped - anchor
 end
 
 function love.draw ()
@@ -118,20 +132,15 @@ function love.draw ()
 	local m = Vec.new (mx, my)
 	local mw = screen_to_world (win, m)
 	local mg = mw:round ()
-	love.graphics.setLineWidth (0.2)
+	love.graphics.setLineWidth (0.1)
 	Debug ("mouse: %.2f, %.2f, [%i,%i]", mw.x, mw.y, mg.x, mg.y)
 
-    love.graphics.push ()
     ---@type RailSegment
-    local obj = Rail[seq[idx]]
-    local pos_a = mw + obj.pos_a - obj.pos_c
-    pos_a = Parity.closest (pos_a, obj.parity_a)
-    local pos = pos_a - obj.pos_a
-    love.graphics.translate (pos.x,pos.y)
 	love.graphics.setColor (1,1,1)
-    love.graphics.polygon ("line", obj.path)
-    love.graphics.pop ()
-    Debug ("idx = %i", idx)
+    obj:draw ()
+    obj:draw_signals ()
+    Debug ("idx = %i, %s", idx, seq[idx])
+    Debug ("inside = %s", tostring (obj:contains (mw)))
 
 	love.graphics.origin ()
 	love.graphics.setColor (1,1,1)

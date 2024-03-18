@@ -115,19 +115,7 @@ local directions = {
 
 ---@return RailSegment
 function RailSegment:gen_path ()
-    --[[ simple line
-    if (self.ang_a % 8) == (self.ang_b % 8) then
-        self.path = {self.pos_a.x, self.pos_a.y, self.pos_b.x, self.pos_b.y}
-    else
-        local dir_a = directions[self.ang_a]
-        local dir_b = directions[self.ang_b]
-        local lambda = Vec.cramer (0-dir_a, dir_b, self.pos_a - self.pos_b)
-        local mid = self.pos_a + lambda.x*dir_a
-        local points = Bezier.plot (self.pos_a, mid, self.pos_b, 8)
-        self.path = Vec.unwrap (points)
-    end
-    --]]
-    local radius = 0.8
+    local radius = 0.6
     ---@type Vec[]
     local tangents
     ---@type Vec[]
@@ -144,7 +132,7 @@ function RailSegment:gen_path ()
         tangents = Bezier.tangent (self.pos_a, mid, self.pos_b, 8)
         tangents = Utils.array_func (tangents, Vec.norm)
     end
-
+    ---@type Vec[]
     local points = {}
     self.top_left = Vec.new (math.huge, math.huge)
     self.bot_right = 0-self.top_left
@@ -241,8 +229,8 @@ RailSegment.c7 = RailSegment.new (
     V(5,2),  0, Parity.ex, {V(1.5,0.5), V(4.5,0.5)})
 
 RailSegment.c8 = RailSegment.new (
-    V(0,2),  8, Parity.ex, {V(0.5,3.5), V(3.5,2.5)},
-    V(5,1),  1, Parity.ey, {V(1.5,0.5), V(4.5,0.5)})
+    V(0,2),  8, Parity.ex, {V(0.5,3.5), V(4.5,2.5)},
+    V(5,1),  1, Parity.ey, {V(0.5,0.5), V(3.5,0.5)})
 
 RailSegment.c9 = RailSegment.new (
     V(0,4),  9, Parity.ey, {V(1.5,4.5), V(2.5,3.5), V(4.5,2.5)},
@@ -261,8 +249,8 @@ RailSegment.cC = RailSegment.new (
     V(1,0),  5, Parity.ex, {V(0.5,4.5), V(0.5,1.5)})
 
 RailSegment.cD = RailSegment.new (
-    V(4,5), 13, Parity.ex, {V(3.5,4.5), V(4.5,3.5), V(2.5,0.5)},
-    V(1,1),  6, Parity.ob, {V(0.5,4.5),    false,   V(0.5,1.5)})
+    V(4,5), 13, Parity.ex, {V(4.5,3.5), V(3.5,2.5), V(2.5,0.5)},
+    V(1,1),  6, Parity.ob, {V(2.5,4.5),    false,   V(0.5,2.5)})
 
 RailSegment.cE = RailSegment.new (
     V(4,4), 14, Parity.ob, {V(4.5,2.5), V(2.5,1.5), V(1.5,0.5)},
