@@ -17,9 +17,10 @@ function RailInstance.new (seg, pos)
 end
 
 function RailInstance:draw ()
+    local seg = self:get_segment ()
     love.graphics.push ()
     love.graphics.translate (self.pos.x, self.pos.y)
-    love.graphics.polygon ("line", RailSegment[self.segment].path)
+    love.graphics.polygon ("line", seg.path)
     love.graphics.pop ()
 end
 
@@ -42,9 +43,13 @@ function RailInstance:draw_signals ()
     love.graphics.pop ()
 end
 
+---@return RailSegment
+function RailInstance:get_segment ()
+    return RailSegment[self.segment]
+end
+
 function RailInstance:contains (p)
-    local seg = RailSegment[self.segment]
-    return seg:contains (p - self.pos)
+    return self:get_segment ():contains (p - self.pos)
 end
 
 return RailInstance

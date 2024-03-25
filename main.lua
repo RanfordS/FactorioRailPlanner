@@ -3,6 +3,9 @@ local Vec = require "vec"
 local Rail = require "rail-segment"
 local RailInstance = require "rail-instance"
 local Parity = require "parity"
+local View = require "view"
+local colors = require "colors"
+local settings = require "settings"
 
 -- Factorio's coordinates are as follows, everything developed to match
 -- 	#--> x
@@ -17,36 +20,17 @@ function Debug (str, ...)
     table.insert (Debug_info, tostring (str):format (...))
 end
 
-local bg_dark  = {27/255, 27/255, 27/255}
-local bg_light = {48/255, 48/255, 48/255}
-local fg_cursor = {1.0, 0.5, 0.2}
-
-local cam = {
-	pos = Vec.new (0,0),
-	zoom = 1,
-	scale = 1,
-	base_speed = 200,
-	shift_speed = 500,
-}
-function cam.set_zoom (z)
-	cam.zoom = z
-	cam.scale = 2^(z/2)
-end
-cam.set_zoom (8)
-
-local function screen_to_world (win, pos)
-	return (pos - win/2)/cam.scale + cam.pos
-end
+local current_view = View.new ()
 
 function love.load ()
-	love.graphics.setBackgroundColor (bg_dark)
+	love.graphics.setBackgroundColor (colors.bg_dark)
 end
 
 function love.wheelmoved (x, y)
 	if 0 < y then
-		cam.set_zoom (cam.zoom + 1)
+        current_view:zoom_in ()
 	elseif y < 0 then
-		cam.set_zoom (math.max (cam.zoom - 1, 0))
+        current_view:zoom_out ()
 	end
 end
 
@@ -58,35 +42,12 @@ local cam_movement = {
 }
 
 function love.update (dt)
-	local speed = love.keyboard.isDown "lshift" and cam.shift_speed or cam.base_speed
-	speed = speed/cam.scale
+	local speed = love.keyboard.isDown "lshift" and settings.shift_speed or settings.base_speed
+	speed = speed/current_view.scale
 	for k, v in pairs (cam_movement) do
 		if love.keyboard.isDown (k) then
-			cam.pos = cam.pos + v*dt*speed
-		end
-	end
-end
-
-local function checkers (win)
-	local tl = screen_to_world (win, Vec.new (0,0)):floor ()
-	local br = screen_to_world (win, win):ceil ()
-
-	local dbg_off = 0
-
-	love.graphics.setColor (bg_light)
-	for r = tl.y+dbg_off, br.y-1-dbg_off do
-		for c = tl.x+dbg_off, br.x-1-dbg_off do
-			if (r + c) % 2 == 0 then
-				love.graphics.rectangle ("fill", c, r, 1, 1)
-			end
-		end
-	end
-    love.graphics.setColor (1.0, 0.8, 0.5)
-	for r = tl.y+dbg_off, br.y-1-dbg_off do
-		for c = tl.x+dbg_off, br.x-1-dbg_off do
-            if r % 2 == 0 and c % 2 == 0 then
-                love.graphics.circle ("fill", c, r, 0.1, 4)
-            end
+            Debug ("key down: %s", k)
+			current_view.world_pos = current_view.world_pos + v*dt*speed
 		end
 	end
 end
@@ -116,26 +77,23 @@ end
 
 function love.draw ()
 	local w, h = love.graphics.getDimensions ()
-	local win = Vec.new (w,h)
+	current_view.dimensions = Vec.new (w,h)
+    current_view:love_transform ()
 
-	love.graphics.origin ()
-	love.graphics.translate (win.x/2, win.y/2)
-	love.graphics.scale (cam.scale)
-	love.graphics.translate (-cam.pos.x, -cam.pos.y)
+	current_view:checkers ()
 
-	checkers (win)
-
-	Debug ("cam pos: %.2f, %.2f", cam.pos.x, cam.pos.y)
-	Debug ("zoom: %.2fpx/tile, %i", cam.scale, cam.zoom)
+	Debug ("current_view pos: %.2f, %.2f", current_view.world_pos.x, current_view.world_pos.y)
+	Debug ("zoom: %.2fpx/tile, %i", current_view.scale, current_view.zoom)
 
 	local mx, my = love.mouse.getPosition ()
 	local m = Vec.new (mx, my)
-	local mw = screen_to_world (win, m)
+	local mw = current_view:screen_to_world_pos (m)
 	local mg = mw:round ()
 	love.graphics.setLineWidth (0.1)
 	Debug ("mouse: %.2f, %.2f, [%i,%i]", mw.x, mw.y, mg.x, mg.y)
 
-    ---@type RailSegment
+    local seg = obj:get_segment ()
+    obj.pos = snapping (mw, seg.pos_c, seg.pos_a, seg.parity_a)
 	love.graphics.setColor (1,1,1)
     obj:draw ()
     obj:draw_signals ()
