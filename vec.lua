@@ -65,6 +65,12 @@ function Vec.__unm (val)
     return Vec.new (-val.x, -val.y)
 end
 
+---@param element_format string
+function Vec:format (element_format)
+    local vec_format = ("(%s,%s)"):format (element_format, element_format)
+    return vec_format:format (self.x, self.y)
+end
+
 ---@param val Vec
 ---@return number
 function Vec.sum (val)

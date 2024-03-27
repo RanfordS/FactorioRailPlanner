@@ -16,6 +16,10 @@ function RailInstance.new (seg, pos)
     },  RailInstance)
 end
 
+function RailInstance:serialize ()
+    return ([[RI("%s",V%s)]]):format (self.segment, self.pos:format "%i")
+end
+
 function RailInstance:draw ()
     local seg = self:get_segment ()
     love.graphics.push ()

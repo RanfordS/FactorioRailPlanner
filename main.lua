@@ -6,6 +6,7 @@ local Parity = require "parity"
 local View = require "view"
 local colors = require "colors"
 local settings = require "settings"
+local World = require "world"
 
 -- Factorio's coordinates are as follows, everything developed to match
 -- 	#--> x
@@ -21,6 +22,7 @@ function Debug (str, ...)
 end
 
 local current_view = View.new ()
+local current_world = World.new ()
 
 function love.load ()
 	love.graphics.setBackgroundColor (colors.bg_dark)
@@ -53,6 +55,7 @@ function love.update (dt)
 end
 
 local obj = RailInstance.new ("c0", Vec.new (10,0))
+table.insert (current_world.ground, obj)
 
 local seq = {
     "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7",
@@ -99,6 +102,8 @@ function love.draw ()
     obj:draw_signals ()
     Debug ("idx = %i, %s", idx, seq[idx])
     Debug ("inside = %s", tostring (obj:contains (mw)))
+
+    Debug (current_world:serialize ())
 
 	love.graphics.origin ()
 	love.graphics.setColor (1,1,1)
