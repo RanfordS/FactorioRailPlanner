@@ -7,6 +7,8 @@ local View = require "view"
 local colors = require "colors"
 local settings = require "settings"
 local World = require "world"
+local Utils = require "utils"
+local positioning = require "positioning"
 
 -- Factorio's coordinates are as follows, everything developed to match
 -- 	#--> x
@@ -68,16 +70,6 @@ function love.mousepressed (x, y, button, istouch, presses)
     obj.segment = seq[idx]
 end
 
----@param pos Vec The point you want to transform (usually the mouse world position).
----@param ref Vec A reference marker (usually the relative centre of the object).
----@param anchor Vec An anchor point.
----@param anchor_parity Parity The parity of the anchor point.
-local function snapping (pos, ref, anchor, anchor_parity)
-    local relative = pos + anchor - ref
-    local snapped = Parity.closest (relative, anchor_parity)
-    return snapped - anchor
-end
-
 function love.draw ()
 	local w, h = love.graphics.getDimensions ()
 	current_view.dimensions = Vec.new (w,h)
@@ -96,7 +88,7 @@ function love.draw ()
 	Debug ("mouse: %.2f, %.2f, [%i,%i]", mw.x, mw.y, mg.x, mg.y)
 
     local seg = obj:get_segment ()
-    obj.pos = snapping (mw, seg.pos_c, seg.pos_a, seg.parity_a)
+    obj.pos = positioning.snap (mw, seg.pos_c, seg.pos_a, seg.parity_a)
 	love.graphics.setColor (1,1,1)
     obj:draw ()
     obj:draw_signals ()
@@ -104,9 +96,36 @@ function love.draw ()
     Debug ("inside = %s", tostring (obj:contains (mw)))
 
     Debug (current_world:serialize ())
+    local test = current_world:serialize ()
+    Debug (World.load (test):serialize ())
 
 	love.graphics.origin ()
 	love.graphics.setColor (1,1,1)
 	love.graphics.print (table.concat (Debug_info, "\n"))
 	Debug_info = {}
 end
+
+
+local seg_type = "s"
+local ang = 0
+
+function love.keypressed (key, scancode, isrepeat)
+    Utils.switch (key,
+    {   s = function ()
+            seg_type = "s"
+        end,
+        c = function ()
+            seg_type = "c"
+        end,
+        r = function ()
+            local seg = obj.segment
+            if love.keyboard.isDown "lshift" then
+                obj.segment = Rail.map_rotate_anticlock[seg]
+            else
+                obj.segment = Rail.map_rotate_clock[seg]
+            end
+        end,
+        default = function () end
+    })
+end
+

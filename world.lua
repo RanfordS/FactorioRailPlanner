@@ -33,12 +33,28 @@ end
 ---@param body_str string
 ---@return World
 function World.load (body_str)
-    local func_str = ("return function (W,RI,V) return %s end"):format (body_str)
+    local func_str = ([[return function (W,RI,V)
+        return %s
+    end]]):format (body_str)
     local outer_func, load_err = load (func_str)
+    setfenv (outer_func, {})
     assert (outer_func, "Failed to load func_str: "..tostring (load_err))
     local inner_func = outer_func ()
+    setfenv (inner_func, {})
     local res = inner_func (World.new, RailInstance.new, Vec.new)
     return res
+end
+
+function World:select (pos)
+    local list = {}
+    local list_i = {}
+    for i, instance in ipairs (self.ground) do
+        if instance:contains (pos) then
+            table.insert (list, instance)
+            table.insert (list_i, tostring (i))
+        end
+    end
+    return list, table.concat (list_i,",")
 end
 
 return World

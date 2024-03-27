@@ -14,4 +14,14 @@ function Utils.array_func (array, func, ...)
     return res
 end
 
+---@param switch string
+---@param cases {[string]: function}
+function Utils.switch (switch, cases)
+    local case = cases[switch]
+    if case then return case() end
+    case = cases.default
+    if case then return case() end
+    error ("Unhandled case `"..switch.."` in switch")
+end
+
 return Utils
